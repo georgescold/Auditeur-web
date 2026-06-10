@@ -18,6 +18,7 @@ Un **« Audit complet » interne, exhaustif, technique et justifié** : perf chi
 ```
 Auditeur site Essort/
 ├── README.md                         ← ce fichier
+├── GUIDE_EXECUTION.md                ← COMMENT lancer un audit (URL libre / CRM / lot) + quand dans le process
 ├── 00_REGLES_COMMUNES.md             ← LA loi (8 garde-fous, LIVE, triple statut, anti-faux-positif)
 ├── 01_ORCHESTRATEUR_AUDIT.md         ← lance les 3 piliers EN PARALLÈLE, fusionne, écrit « Audit complet »
 ├── templates/
