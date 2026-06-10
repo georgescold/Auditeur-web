@@ -17,7 +17,7 @@ Tu mesures la **lisibilité et l'accessibilité de base** du site : ratios de co
 | Texte normal (< 18 pt / < 14 pt gras) | ≥ 4,5:1 | ≥ 7:1 | Corps de texte, labels, légendes |
 | Grand texte (≥ 18 pt / ≥ 14 pt gras) | ≥ 3:1 | ≥ 4,5:1 | Titres, CTA larges |
 | Composants UI / icônes informatives | ≥ 3:1 | — | Bordures de champ actif, icônes-seules porteuses de sens |
-| Tap target mobile | ≥ 44 × 44 px | — | Boutons, liens, zones cliquables sur mobile |
+| Tap target mobile | ≥ 24 × 24 px (WCAG 2.2 AA) | ≥ 44 × 44 px (WCAG 2.1 AAA) | **Barre Essort = 44 px** (recommandation Apple/Google, confort réel). En dessous de 24 px = non-conformité AA ; entre 24 et 44 px = piste d'amélioration, pas une faute |
 
 > Rappel de périmètre : le **choix esthétique de la palette** (harmonies, ambiance chromatique) est l'affaire de **B3**. Toi, tu mesures uniquement si la combinaison retenue est **lisible** selon les seuils WCAG. Ne pas juger le goût, donner le chiffre.
 
@@ -83,7 +83,7 @@ Répéter après `resize_window` à 390 px (mobile) pour capturer les variantes 
     .filter(e => e.offsetParent !== null);
   const smallTargets = interactive.map(e => {
     const r = e.getBoundingClientRect();
-    return { text: (e.innerText || e.value || e.getAttribute('aria-label') || '').trim().slice(0, 30), tag: e.tagName, w: Math.round(r.width), h: Math.round(r.height), tooSmall: r.width < 44 || r.height < 44 };
+    return { text: (e.innerText || e.value || e.getAttribute('aria-label') || '').trim().slice(0, 30), tag: e.tagName, w: Math.round(r.width), h: Math.round(r.height), tooSmall: r.width < 44 || r.height < 44, belowAA22: r.width < 24 || r.height < 24 };
   }).filter(x => x.tooSmall);
 
   // Labels de formulaire
@@ -96,13 +96,18 @@ Répéter après `resize_window` à 390 px (mobile) pour capturer les variantes 
   // Attribut lang
   const lang = document.documentElement.lang || null;
 
-  // Focus outline : injecter un élément focusable et vérifier son style (approche passive)
+  // Focus outline : donner réellement le focus, puis lire le style calculé de l'élément focusé.
+  // NB : getComputedStyle(el, ':focus') ne fonctionne PAS (le 2e argument ne sert qu'aux
+  // pseudo-ÉLÉMENTS ::before/::after, pas aux pseudo-classes). L'élément étant focusé,
+  // getComputedStyle(el) reflète déjà les styles :focus / :focus-visible appliqués.
   const firstFocusable = document.querySelector('a,button,input,select,textarea,[tabindex]');
   let focusOutlineDetected = null;
   if (firstFocusable) {
     firstFocusable.focus();
-    const cs = getComputedStyle(firstFocusable, ':focus');
-    focusOutlineDetected = cs.outlineStyle !== 'none' && cs.outlineWidth !== '0px';
+    const cs = getComputedStyle(firstFocusable);
+    const hasOutline = cs.outlineStyle !== 'none' && cs.outlineWidth !== '0px';
+    const hasBoxShadowFocus = cs.boxShadow && cs.boxShadow !== 'none';
+    focusOutlineDetected = hasOutline || hasBoxShadowFocus; // certains designs remplacent l'outline par un box-shadow
     firstFocusable.blur();
   }
 

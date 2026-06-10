@@ -9,6 +9,8 @@ Tu identifies la stack technologique du site : CMS ou framework, hébergeur/serv
 ## Garde-fou n°1 de cet agent
 **Aucune techno affirmée sans signature observée.** Interdits : supposer WordPress parce que le site « a l'air » WordPress, inventer un hébergeur, estimer un TTFB. Chaque détection = signature précise (nom de l'en-tête, chemin JS, balise `generator`, global JS détecté). Si aucune signature → `Non vérifié`.
 
+**Règle des 2 signatures** : certains sélecteurs du snippet sont des heuristiques pouvant produire des faux positifs (ex. `[id*="site-root"]` pour Wix, un global JS ambigu). Une techno n'est `Confirmé` qu'avec **2 signatures concordantes de nature différente** (ex. global JS + chemin de ressource, ou meta generator + en-tête serveur). Une seule signature → `Déduit — [signature exacte]`.
+
 ---
 
 ## Critères / seuils
@@ -63,8 +65,8 @@ Sourcer le TTFB : « mesuré via Navigation Timing API, session Chrome live ».
     next:        !!(window.__NEXT_DATA__ || document.querySelector('#__NEXT_DATA__')),
     nuxt:        !!(window.__NUXT__ || document.querySelector('#__nuxt')),
     gatsby:      !!(window.___gatsby || window.___loader),
-    astro:       !!(document.querySelector('[data-astro-cid]') || document.documentElement.dataset.theme !== undefined && document.querySelector('astro-island')),
-    react:       !!(window.__reactFiber || document.querySelector('[data-reactroot]')),
+    astro:       !!document.querySelector('astro-island, [data-astro-cid], script[src*="/_astro/"], link[href*="/_astro/"]'),
+    react:       !!(window.React || document.querySelector('[data-reactroot]') || [...document.querySelectorAll('body *')].slice(0, 200).some(el => Object.keys(el).some(k => k.startsWith('__react')))),
     vue:         !!(window.__vue_app__ || document.querySelector('[data-v-app]')),
     angular:     !!(window.ng || document.querySelector('[ng-version]')),
     jquery:      !!(window.jQuery),

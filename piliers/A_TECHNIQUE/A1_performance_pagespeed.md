@@ -32,8 +32,8 @@ Via `web_fetch`, mobile PUIS desktop :
 https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<URL_ENCODÉE>&strategy=mobile&category=performance
 https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<URL_ENCODÉE>&strategy=desktop&category=performance
 ```
-Extraire : `lighthouseResult.categories.performance.score`, et dans `audits` : `largest-contentful-paint`, `interaction-to-next-paint` (ou `max-potential-fid`), `cumulative-layout-shift`, `first-contentful-paint`, `speed-index`, `total-byte-weight`, `server-response-time`, et les `opportunities` principales (unused JS/CSS, images non optimisées, render-blocking).
-Noter aussi le `loadingExperience` (CrUX, données terrain réelles) si présent : c'est plus fiable que le lab.
+Extraire : `lighthouseResult.categories.performance.score`, et dans `audits` : `largest-contentful-paint`, `total-blocking-time` (TBT — **proxy lab de l'INP**, car l'INP n'existe pas en lab), `cumulative-layout-shift`, `first-contentful-paint`, `speed-index`, `total-byte-weight`, `server-response-time`, et les audits de type opportunity (unused JS/CSS, images non optimisées, render-blocking).
+Noter aussi le `loadingExperience` (CrUX, données terrain réelles) si présent : c'est plus fiable que le lab, et c'est la **seule source du vrai INP** (`INTERACTION_TO_NEXT_PAINT`). Dans la sortie, ne jamais présenter le TBT comme « l'INP » : écrire « TBT (lab) » et « INP (terrain CrUX) » distinctement.
 
 ### Niveau 1bis — Mesure LIVE (Claude in Chrome) — complément + fallback
 Si PageSpeed ne répond pas, ou pour confirmer en conditions réelles, exécuter via `javascript_tool` :
@@ -43,7 +43,22 @@ Si PageSpeed ne répond pas, ou pour confirmer en conditions réelles, exécuter
   const res = performance.getEntriesByType('resource');
   const paint = performance.getEntriesByType('paint');
   const fcp = (paint.find(p=>p.name==='first-contentful-paint')||{}).startTime;
-  const lcpE = performance.getEntriesByType('largest-contentful-paint').slice(-1)[0];
+  // LCP/CLS : non exposés via getEntriesByType (retourne toujours []).
+  // Lecture synchrone via PerformanceObserver buffered + takeRecords().
+  let lcpMs = null, cls = null;
+  try {
+    const po = new PerformanceObserver(()=>{});
+    po.observe({type:'largest-contentful-paint', buffered:true});
+    const e = po.takeRecords(); po.disconnect();
+    if (e.length) lcpMs = Math.round(e[e.length-1].startTime);
+  } catch(err) {}
+  try {
+    const po2 = new PerformanceObserver(()=>{});
+    po2.observe({type:'layout-shift', buffered:true});
+    cls = Math.round(po2.takeRecords().filter(e=>!e.hadRecentInput)
+      .reduce((s,e)=>s+e.value,0)*1000)/1000;
+    po2.disconnect();
+  } catch(err) {}
   const byType = {};
   res.forEach(r=>{const t=r.initiatorType||'other';byType[t]=(byType[t]||0)+(r.transferSize||0);});
   const imgs=[...document.images];
@@ -52,17 +67,18 @@ Si PageSpeed ne répond pas, ou pour confirmer en conditions réelles, exécuter
     ttfbMs: Math.round(nav.responseStart||0),
     domContentLoaded: Math.round(nav.domContentLoadedEventEnd||0),
     fcpMs: fcp?Math.round(fcp):null,
-    lcpMs: lcpE?Math.round(lcpE.startTime):null,
+    lcpMs,
+    clsLive: cls,
     totalKB: Math.round(res.reduce((s,r)=>s+(r.transferSize||0),0)/1024),
     reqCount: res.length,
     weightByType: Object.fromEntries(Object.entries(byType).map(([k,v])=>[k,Math.round(v/1024)+'KB'])),
     imgCount: imgs.length,
-    imgsHeavy: imgs.filter(i=>i.naturalWidth>0).length,
+    imgsLoaded: imgs.filter(i=>i.naturalWidth>0).length,
     imgFormats: [...new Set(imgs.map(i=>(i.currentSrc||'').split('.').pop().split('?')[0]).filter(Boolean))]
   });
 })()
 ```
-Mesure CLS en live possible via `PerformanceObserver({type:'layout-shift'})` si la session le permet.
+Si `lcpMs` ou `clsLive` reviennent `null` (observer non supporté, entrée expirée), marquer la mesure live `Non vérifié` : le lab PageSpeed reste la référence.
 
 ### Niveau 2 — read_network_requests
 Confirmer les ressources les plus lourdes/lentes, repérer images > 200 Ko, polices non préchargées, scripts tiers lents.
@@ -88,8 +104,9 @@ Si tout échoue (anti-bot, timeout) : marquer `Non vérifié` en précisant le b
 | Métrique | Mobile | Desktop | Statut | Source |
 |----------|--------|---------|--------|--------|
 | Score perf | | | | PageSpeed |
-| LCP | | | | |
-| INP | | | | |
+| LCP | | | | lab + terrain si CrUX |
+| TBT (lab, proxy INP) | | | | PageSpeed |
+| INP (terrain CrUX uniquement) | | | | loadingExperience |
 | CLS | | | | |
 | FCP | | | | |
 | Poids total | | | | |

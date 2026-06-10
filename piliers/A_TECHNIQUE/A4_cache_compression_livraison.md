@@ -59,7 +59,7 @@ Exécuter ce snippet pour lire le protocole utilisé par les ressources (nextHop
   });
 })()
 ```
-Ce snippet confirme si les ressources transitent en `h2`, `h3`, `http/1.1` ou `h2` (HTTPS/2). Croiser avec les en-têtes `alt-svc` pour HTTP/3.
+Ce snippet lit le protocole réel de chaque ressource : `h3` (HTTP/3), `h2` (HTTP/2) ou `http/1.1`. Croiser avec l'en-tête `alt-svc` (qui annonce la disponibilité HTTP/3 même quand la session courante est en h2).
 
 ### Niveau 2 — `web_fetch` des en-têtes bruts (double-check absences)
 Si un en-tête semble absent dans `read_network_requests`, confirmer via `web_fetch` sur l'URL directe d'une ressource statique. On peut aussi utiliser **redbot** (`https://redbot.org/?uri=<URL_RESSOURCE>`) ou **securityheaders.com** pour un relevé exhaustif des en-têtes. Cela constitue la 2e vérification indépendante (Règle 4).

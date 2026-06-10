@@ -57,9 +57,9 @@ Sur la même URL, lancer **simultanément** :
 
 ### Profondeur du pilier C (à choisir au lancement)
 Le pilier C contient 11 agents. Selon le besoin :
-- **Express** (recommandé pour la prospection) : Agent 03 (homepage on-page) + Agent 07 (technique SEO/schema/indexation) + Agent 09 (visibilité IA, grille GEO). Rapide, couvre l'essentiel SEO/GEO.
+- **Express** (recommandé pour la prospection) : Agent 03 (homepage on-page) + Agent 07 (technique SEO/schema/indexation) + Agent 09 (visibilité IA, grille GEO) **+ Agent 09bis** (auto-test IA, enchaîné après 09 — il produit toujours au minimum le test Claude + Web Search Google). Couvre l'essentiel SEO/GEO actionnable.
 - **Complet** : toute la séquence des 11 agents (audit SEO/GEO approfondi).
-Indiquer le mode retenu dans l'audit final.
+Indiquer le mode retenu dans l'audit final. Le score C /10 s'agrège selon `templates/Grille_Notation_Visibilite.md` (pondérations adaptées au mode lancé).
 
 ---
 

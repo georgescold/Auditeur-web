@@ -13,7 +13,7 @@
 2. **Audit interne, pas client.** La Règle 8 du pilier C (vocabulaire client-friendly / glossaire) visait des PDF client. Dans l'« Audit complet » interne, **on a le droit d'être technique** (c'est l'agent mails, séparé, qui vulgarisera plus tard pour le prospect). On garde donc la rigueur SEO/GEO du kit, sans s'obliger à tout vulgariser.
 
 3. **Profondeur pilotée par l'orchestrateur global :**
-   - **Express** (prospection) : Agents **03** (homepage on-page) + **07** (technique SEO, schema, indexation, sitemap/robots/llms.txt) + **09** (visibilité IA + grille GEO). C'est l'essentiel actionnable.
+   - **Express** (prospection) : Agents **03** (homepage on-page) + **07** (technique SEO, schema, indexation, sitemap/robots/llms.txt) + **09** (visibilité IA + grille GEO) + **09bis** (auto-test IA, enchaîné après 09 — toujours au minimum Claude + Web Search Google). C'est l'essentiel actionnable.
    - **Complet** : toute la séquence des 11 agents (`01_MASTER_ORCHESTRATOR.md`), pour un audit SEO/GEO approfondi.
 
    **Condensation en un score C /10** (pour la pondération A/B/C de l'orchestrateur global) : voir `../../templates/Grille_Notation_Visibilite.md`. Elle réutilise la pondération native du kit (Agent 10) selon le mode lancé (Complet : Σ poids = 12 ; Express : Σ poids = 5,5). Le Score de Visibilité IA /100 (09bis) reste affiché en plus dans la section PILIER C.

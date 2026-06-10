@@ -69,7 +69,7 @@ Auditeur site Essort/
    - *« Audite le lead [Nom] de la vue Loys »* (Mode CRM → écrit « Audit complet »), ou
    - *« Audite https://exemple.fr (secteur : … ) »* (Mode URL libre → restitue le rapport).
 3. L'orchestrateur lance **A, B, C en parallèle** (et leurs sous-agents en parallèle), contrôle la cohérence, fusionne au format `templates/format_audit_complet.md`, calcule le score /100, et écrit dans le CRM.
-4. Profondeur du pilier C : **Express** (03+07+09, pour la prospection) ou **Complet** (11 agents).
+4. Profondeur du pilier C : **Express** (03+07+09 + 09bis enchaîné, pour la prospection) ou **Complet** (11 agents).
 
 > Parallélisme : les 3 piliers sont **indépendants** (aucun ne dépend de la sortie d'un autre) → 100 % parallélisables. Dans A et B, le **collecteur** (A-COL / B-COL) tourne d'abord, puis les **9 analystes** (A1→A9 / B1→B9) sont indépendants et parallèles.
 

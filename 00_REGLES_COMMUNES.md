@@ -58,6 +58,7 @@ Ne jamais prétendre avoir « tout crawlé » / « tout testé ». Préciser le 
 ### Niveau 1 — Claude in Chrome (PRIMAIRE)
 Méthode reine de l'auditeur. Permet l'analyse **visuelle réelle**, le **test interactif**, le rendu **mobile**, l'**exécution JS** et la lecture **console/réseau** :
 - `navigate` sur le site, capture du hero, puis **scroll complet** (captures par section), **desktop ET mobile** (`resize_window` ~390 px).
+- **Bannière cookies / consentement** : si une bannière masque la page, la **capturer d'abord** (première impression réelle), puis la **fermer sans accepter** (« Continuer sans accepter », « Refuser », croix). **Jamais « Tout accepter »** (empreinte minimale, Règle 6). Si non fermable sans accepter : continuer avec ce qui est visible et le noter au périmètre.
 - **Test interactif** : cliquer menu, CTA, ouvrir tunnel/quote, burger mobile, liens réseaux (cf. Règle 6 — jamais de soumission réelle).
 - **`javascript_tool`** : extraction technique/SEO/perf/contraste en un appel (cf. snippets dans les agents).
 - **`read_console_messages`** + **`read_network_requests`** : erreurs JS, 404, ressources lourdes/lentes.
@@ -72,6 +73,14 @@ Méthode reine de l'auditeur. Permet l'analyse **visuelle réelle**, le **test i
 Si Chrome ET Web Fetch échouent (Cloudflare 403, anti-bot, timeout), demander un élément précis, en indiquant le blocage exact (code HTTP, outil tenté). Sinon, continuer en mode dégradé avec `Non vérifié` (ne jamais bloquer le workflow).
 
 > ⚠️ **Cohérence code ↔ écran (Règle 5)** : toute donnée déduite du code se **revérifie à l'écran** avant d'être affirmée. Un défaut vu dans le HTML peut ne pas exister visuellement.
+
+### Périmètre minimal standard (toutes profondeurs confondues)
+Pour qu'un audit soit comparable d'un lead à l'autre, le périmètre minimal est :
+- **Page d'accueil** : desktop + mobile (~390 px), scroll complet, captures par section.
+- **1 à 2 pages clés** selon le secteur : page services/produit principale, et/ou page contact/devis.
+- **Liens de navigation principaux cliqués** (menu, CTA hero, footer).
+- Les pages **non couvertes** sont listées au périmètre (Règle 8) — jamais sous-entendues comme auditées.
+En deçà de ce périmètre (site bloqué, anti-bot…), l'audit reste livrable mais sa **confiance globale est plafonnée à « Moyen »** et la raison est notée en tête d'audit.
 
 ---
 

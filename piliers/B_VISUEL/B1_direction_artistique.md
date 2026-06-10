@@ -21,7 +21,7 @@ Chaque jugement = une **preuve visuelle** (capture + zone précise). Le design n
 | Hiérarchie visuelle | point focal par section | regard guidé | tout au même niveau |
 | Qualité des visuels | photos/illu cohérentes | authentiques, HD | stock générique, étirées |
 | Finition / détails | hover, états, composants | homogènes, soignés | incohérents, bâclés |
-| Modernité | codes 2024-2026 | actuel | daté (renvoyer à B3) |
+| Modernité | codes 2024-2026 | actuel | daté (le verdict global « daté/IA » = B8) |
 
 ---
 

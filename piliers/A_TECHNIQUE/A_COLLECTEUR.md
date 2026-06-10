@@ -42,19 +42,35 @@ Charger la page d'accueil (`navigate`), attendre le rendu complet, puis exécute
   const res = performance.getEntriesByType('resource');
   const paint = performance.getEntriesByType('paint');
   const fcp = (paint.find(p => p.name === 'first-contentful-paint') || {}).startTime;
-  const lcpE = performance.getEntriesByType('largest-contentful-paint').slice(-1)[0];
+  // LCP et CLS ne sont PAS exposés via getEntriesByType (toujours vide) :
+  // seul PerformanceObserver avec buffered:true + takeRecords() les lit de façon synchrone.
+  let lcpMs = null, cls = null;
+  try {
+    const po = new PerformanceObserver(() => {});
+    po.observe({ type: 'largest-contentful-paint', buffered: true });
+    const e = po.takeRecords(); po.disconnect();
+    if (e.length) lcpMs = Math.round(e[e.length - 1].startTime);
+  } catch (err) {}
+  try {
+    const po2 = new PerformanceObserver(() => {});
+    po2.observe({ type: 'layout-shift', buffered: true });
+    cls = Math.round(po2.takeRecords().filter(e => !e.hadRecentInput)
+      .reduce((s, e) => s + e.value, 0) * 1000) / 1000;
+    po2.disconnect();
+  } catch (err) {}
   const byType = {};
   res.forEach(r => {
     const t = r.initiatorType || 'other';
     byType[t] = (byType[t] || 0) + (r.transferSize || 0);
   });
   return JSON.stringify({
-    _source: 'javascript_tool / Navigation+Resource+Paint Timing',
+    _source: 'javascript_tool / Navigation+Resource+Paint Timing + PerformanceObserver(buffered)',
     navMs: Math.round(nav.duration || 0),
     ttfbMs: Math.round(nav.responseStart || 0),
     domContentLoadedMs: Math.round(nav.domContentLoadedEventEnd || 0),
     fcpMs: fcp ? Math.round(fcp) : null,
-    lcpMs: lcpE ? Math.round(lcpE.startTime) : null,
+    lcpMs,
+    clsLive: cls,
     totalKB: Math.round(res.reduce((s, r) => s + (r.transferSize || 0), 0) / 1024),
     reqCount: res.length,
     weightByTypeKB: Object.fromEntries(
@@ -63,6 +79,7 @@ Charger la page d'accueil (`navigate`), attendre le rendu complet, puis exécute
   });
 })()
 ```
+> ⚠️ Si `lcpMs` revient `null` (observer non supporté ou entrée expirée), le noter `Non vérifié (live)` : le LCP lab de PageSpeed reste la source de référence.
 
 **Étape 2 — Inventaire images + polices + signatures stack**
 
@@ -130,9 +147,9 @@ https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<URL_ENCODÉE>&st
 
 Extraire et conserver brut :
 - `lighthouseResult.categories.*` (scores × 4 catégories × 2 stratégies).
-- `lighthouseResult.audits` : `largest-contentful-paint`, `interaction-to-next-paint`, `cumulative-layout-shift`, `first-contentful-paint`, `speed-index`, `total-byte-weight`, `server-response-time`.
-- `lighthouseResult.audits.opportunities` : toutes les opportunités avec `overallSavingsMs` et `overallSavingsBytes`.
-- `loadingExperience` (CrUX terrain) si présent.
+- `lighthouseResult.audits` : `largest-contentful-paint`, `total-blocking-time` (TBT, **proxy lab de l'INP** : l'INP n'existe pas en lab), `cumulative-layout-shift`, `first-contentful-paint`, `speed-index`, `total-byte-weight`, `server-response-time`.
+- Les audits de type **opportunity** (champ `details.type === "opportunity"`) : `render-blocking-resources`, `unused-javascript`, `unused-css-rules`, `uses-optimized-images`, `modern-image-formats`, `uses-responsive-images`… avec leurs `overallSavingsMs` / `overallSavingsBytes`.
+- `loadingExperience` (CrUX terrain) si présent — **seule source du vrai INP** (`INTERACTION_TO_NEXT_PAINT`), plus LCP/CLS terrain.
 
 ---
 
@@ -176,14 +193,14 @@ Si Chrome échoue (anti-bot, timeout, Cloudflare 403) **ET** PageSpeed échoue :
 | Métrique | Valeur | Seuil |
 |---|---|---|
 | LCP | | ≤ 2,5 s |
-| INP | | ≤ 200 ms |
+| TBT (proxy lab de l'INP) | | ≤ 200 ms |
 | CLS | | ≤ 0,1 |
 | FCP | | ≤ 1,8 s |
 | Speed Index | | |
 | Poids total (PSI) | | |
 | TTFB (server-response-time) | | |
 
-**CrUX terrain mobile :** [présent / absent] — si présent : LCP terrain = , INP terrain =
+**CrUX terrain mobile :** [présent / absent] — si présent : LCP terrain = , **INP terrain** (seule vraie mesure d'INP) = , CLS terrain =
 
 **Opportunités principales (mobile) :**
 | Audit | Économie estimée |

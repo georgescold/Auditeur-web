@@ -161,6 +161,7 @@ Barème :
 ---
 
 ## Garde-fous spécifiques
+- **Feuilles de style cross-origin (Google Fonts, CDN)** : leurs `cssRules` sont illisibles depuis JS (SecurityError, avalé par le try/catch du snippet). Un `font-display: absent` retourné par le snippet sur une police Google Fonts ne prouve RIEN. Pour Google Fonts, vérifier le paramètre **`display=swap` dans l'URL** de la feuille (`fonts.googleapis.com/css2?family=…&display=swap`) via le DOM ou `read_network_requests`. Sans cette vérification → `Non vérifié`, jamais « font-display absent ».
 - Ne jamais conclure « render-blocking absent » depuis le HTML seul : vérifier via `read_network_requests` ET l'opportunité Lighthouse `render-blocking-resources`.
 - Un `<link rel=stylesheet>` avec `media="print"` ou `media="(prefers-color-scheme: dark)"` n'est **pas** bloquant : ne pas le comptabiliser comme tel.
 - `font-display: optional` n'est pas un problème : il supprime le FOIT et le FOUT en sacrifiant le rechargement sur réseau lent — à noter comme choix délibéré, non comme défaut.
